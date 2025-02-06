@@ -1,0 +1,506 @@
+task.wait(1)
+local AdminEvent = game:GetService("ReplicatedStorage"):WaitForChild("$ArCommunicator")
+local plr = game:GetService("Players").LocalPlayer
+
+function firetouchinterest(Entity, Toucher)
+	local Old_Pos = Toucher.CFrame
+
+    Toucher.CFrame = Entity.CFrame * CFrame.new(0,2,0)
+
+    task.wait(0.05)
+
+    Toucher.CFrame = Old_Pos
+end
+
+local Gui = Instance.new("ScreenGui", plr.PlayerGui)
+Gui.ResetOnSpawn = false
+Gui.IgnoreGuiInset = true
+script.Parent = Gui
+
+local MainFrame = Instance.new("Frame", Gui)
+MainFrame.BackgroundColor3 = Color3.new(0,0,0)
+MainFrame.BackgroundTransparency = 0.25
+MainFrame.Position = UDim2.new(0.763,0,0.155,0)
+MainFrame.Size = UDim2.new(0.188,0,0.69,0)
+Instance.new("UICorner", MainFrame)
+local UIStrokeMainFrame = Instance.new("UIStroke", MainFrame)
+UIStrokeMainFrame.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStrokeMainFrame.Color = Color3.new(1,1,1)
+UIStrokeMainFrame.Thickness = 2
+
+local BackButton = Instance.new("TextButton", MainFrame)
+BackButton.BackgroundColor3 = Color3.new(0,0,0)
+BackButton.BackgroundTransparency = 0.25
+BackButton.Position = UDim2.new(0,0,1.018,0)
+BackButton.Size = UDim2.new(0.239,0,0.079,0)
+BackButton.Text = "←"
+BackButton.TextScaled = true
+BackButton.TextColor3 = Color3.new(1,1,1)
+BackButton.Font = Enum.Font.Arcade
+UIStrokeMainFrame:Clone().Parent = BackButton
+Instance.new("UICorner", BackButton)
+
+local NextButton = BackButton:Clone()
+NextButton.Parent = MainFrame
+NextButton.Position = UDim2.new(0.761,0,1.018,0)
+NextButton.Text = "→"
+
+local CurrentPage = 1
+
+local Page1 = Instance.new("Folder", MainFrame)
+Page1.Name = "Page1"
+
+local MorphList = Instance.new("ScrollingFrame", Page1)
+MorphList.BackgroundColor3 = Color3.fromRGB(22,22,22)
+MorphList.Position = UDim2.new(0.063,0,0.054,0)
+MorphList.Size = UDim2.new(0.874,0,0.671,0)
+MorphList.CanvasSize = UDim2.new(0,0,100,0)
+MorphList.ScrollBarImageColor3 = Color3.new(1,1,1)
+MorphList.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+Instance.new("UICorner", MorphList)
+UIStrokeMainFrame:Clone().Parent = MorphList
+local UIListLayoutMorphList = Instance.new("UIListLayout", MorphList)
+UIListLayoutMorphList.Padding = UDim.new(0,8)
+
+local CurrentMorph = nil
+local MorphIsRig = false
+
+local SearchMorphBox = Instance.new("TextBox", Page1)
+SearchMorphBox.BackgroundColor3 = Color3.fromRGB(86,86,86)
+SearchMorphBox.Position = UDim2.new(0.041,0,-0.092,0)
+SearchMorphBox.Size = UDim2.new(0.913,0,0.066,0)
+SearchMorphBox.PlaceholderColor3 = Color3.fromRGB(170,170,170)
+SearchMorphBox.PlaceholderText = "Morph Name?"
+SearchMorphBox.TextColor3 = Color3.new(1,1,1)
+SearchMorphBox.TextStrokeTransparency = 0
+SearchMorphBox.TextScaled = true
+SearchMorphBox.Font = Enum.Font.Arcade
+Instance.new("UICorner", SearchMorphBox)
+UIStrokeMainFrame:Clone().Parent = SearchMorphBox
+
+local RefreshButton = Instance.new("TextButton", Page1)
+RefreshButton.Position = UDim2.new(0.145,0,0.787,0)
+RefreshButton.Size = UDim2.new(0.71,0,0.141,0)
+RefreshButton.BackgroundColor3 = Color3.fromRGB(47,47,47)
+RefreshButton.TextColor3 = Color3.new(1,1,1)
+RefreshButton.TextStrokeTransparency = 0
+RefreshButton.TextScaled = true
+RefreshButton.Font = Enum.Font.Arcade
+RefreshButton.Text = "Refresh"
+local UICornerRefreshButton = Instance.new("UICorner", RefreshButton)
+UICornerRefreshButton.CornerRadius = UDim.new(0,5)
+local UIStrokeRefreshButton = Instance.new("UIStroke", RefreshButton)
+UIStrokeRefreshButton.Color = Color3.fromRGB(158,158,158)
+UIStrokeRefreshButton.Thickness = 2
+UIStrokeRefreshButton.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+function Refresh()
+	local Pos = plr.Character.HumanoidRootPart.CFrame
+	firetouchinterest(workspace.Maps["Gamepasses Room"].NEOMorph.Button,plr.Character.HumanoidRootPart)
+	plr.CharacterAdded:Wait()
+	task.wait(0.05)
+	plr.Character:WaitForChild("HumanoidRootPart").CFrame = Pos
+	CurrentMorph = nil
+	MorphIsRig = false
+end
+
+RefreshButton.MouseButton1Down:Connect(Refresh)
+
+local MorphsTable = {}
+
+for i,char in pairs(workspace:GetDescendants()) do
+	if char:IsA("Model") then
+		local MrphPad = char:FindFirstChild("MrphPad") or char:FindFirstChild("Button") or char:FindFirstChild("HalloweenPad")
+		if MrphPad then
+			local MrphButton = RefreshButton:Clone()
+			MrphButton.Parent = MorphList
+			MrphButton.Size = UDim2.new(1,0,0.0015,0)
+			MrphButton.Text = char.Name
+			MrphButton.MouseButton1Down:Connect(function()
+				local ThisisMorphRig = false
+				if MrphPad.Parent and MrphPad.Parent:FindFirstChild("Morph") and MrphPad.Parent:FindFirstChild("Morph"):FindFirstChild("Tors") then
+					ThisisMorphRig = true
+				end
+				if MorphIsRig or ThisisMorphRig then Refresh() end
+				firetouchinterest(MrphPad,FindHRP())
+				CurrentMorph = MrphPad
+				task.wait(0.3)
+				if plr.Character:FindFirstChild("Tors") then 
+					MorphIsRig = true 
+				else 
+					MorphIsRig = false 
+				end
+			end)
+			table.insert(MorphsTable,MrphPad)
+		end
+	end
+end
+
+SearchMorphBox:GetPropertyChangedSignal("Text"):Connect(function()
+	for i,button in pairs(MorphList:GetChildren()) do
+		if button:IsA("TextButton") then
+			if string.find(string.lower(button.Text),string.lower(SearchMorphBox.Text)) then
+				button.Visible = true
+			else
+				button.Visible = false
+			end
+		end
+	end
+end)
+
+local Page2 = Instance.new("Folder", MainFrame)
+Page2.Name = "Page2"
+
+local InvisibleBioAndName = RefreshButton:Clone()
+InvisibleBioAndName.Parent = Page2
+InvisibleBioAndName.Text = "Invis. Bio and Name"
+InvisibleBioAndName.Position = UDim2.new(0.145,0,0.065,0)
+
+local MissButton = InvisibleBioAndName:Clone()
+MissButton.Parent = Page2
+MissButton.Text = "Miss Animation"
+MissButton.Position = UDim2.new(0.145,0,0.248,0)
+
+local RainbowFire = InvisibleBioAndName:Clone()
+RainbowFire.Parent = Page2
+RainbowFire.Text = "RainbowFire"
+RainbowFire.Position = UDim2.new(0.145,0,0.429,0)
+local RainbowFireEnabled = false
+
+local leleleCensore = InvisibleBioAndName:Clone()
+leleleCensore.Parent = Page2
+leleleCensore.Text = "(le le le le le le le le) Anti-Censore"
+leleleCensore.Position = UDim2.new(0.145,0,0.612,0)
+
+local LoopRandomMorphs = InvisibleBioAndName:Clone()
+LoopRandomMorphs.Parent = Page2
+LoopRandomMorphs.Text = "Loop Random Morphs"
+LoopRandomMorphs.Position = UDim2.new(0.145,0,0.795,0)
+local LoopRandomMorphsEnabled = false
+
+InvisibleBioAndName.MouseButton1Down:Connect(function()
+	workspace.EventsRPGUI.ChangeNameEvent:FireServer("|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ")
+	workspace.EventsRPGUI.ChangeBioEvent:FireServer("|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ")
+end)
+
+MissButton.MouseButton1Down:Connect(function()
+	AdminEvent:FireServer("hat 14661068748")
+	game:GetService("TweenService"):Create(plr.Character.HumanoidRootPart,TweenInfo.new(0.25),{CFrame = plr.Character.HumanoidRootPart.CFrame * CFrame.new(12,0,0)}):Play()
+	task.wait(1.35)
+	game:GetService("TweenService"):Create(plr.Character.HumanoidRootPart,TweenInfo.new(0.35),{CFrame = plr.Character.HumanoidRootPart.CFrame * CFrame.new(-12,0,0)}):Play()
+	AdminEvent:FireServer("rhats")
+end)
+
+RainbowFire.MouseButton1Down:Connect(function()
+	RainbowFireEnabled = not RainbowFireEnabled
+	if not RainbowFireEnabled then AdminEvent:FireServer("unfire") end
+end)
+
+LoopRandomMorphs.MouseButton1Down:Connect(function()
+	LoopRandomMorphsEnabled = not LoopRandomMorphsEnabled
+end)
+
+spawn(function()
+	while task.wait(0.1) do
+		if RainbowFireEnabled then
+			AdminEvent:FireServer("fire me 25 "..math.random(25,255).." "..math.random(25,255).." "..math.random(25,255))
+		end
+	end
+end)
+
+spawn(function()
+	while task.wait() do
+		if LoopRandomMorphsEnabled then
+			local MrphPad = math.random(1,#MorphList:GetChildren())
+			local ThisisMorphRig = false
+			if MrphPad.Parent and MrphPad.Parent:FindFirstChild("Morph") and MrphPad.Parent:FindFirstChild("Morph"):FindFirstChild("Tors") then
+				ThisisMorphRig = true
+			end
+			if MorphIsRig or ThisisMorphRig then Refresh() end
+			firetouchinterest(MrphPad,FindHRP())
+			CurrentMorph = MrphPad
+			task.wait(0.3)
+			if plr.Character:FindFirstChild("Tors") then 
+				MorphIsRig = true 
+			else 
+				MorphIsRig = false 
+			end
+		end
+	end
+end)
+
+local TextChatService = game:GetService("TextChatService")
+
+isLegacyChat = TextChatService.ChatVersion == Enum.ChatVersion.LegacyChatService
+
+leleleCensore.MouseButton1Down:Connect(function()
+	local PlayersList = {}
+	for i,p in pairs(game:GetService("Players"):GetPlayers()) do
+		if p ~= plr then
+			table.insert(PlayersList,p.Name)
+		end
+	end
+
+	local needle = "le le le le le"
+	local str = "/w "..PlayersList[math.random(1,#PlayersList)].." "..needle
+
+	if not isLegacyChat then
+		TextChatService.TextChannels.RBXGeneral:SendAsync(str)
+	else
+		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(str, "All")
+	end
+
+end)
+
+local Page3 = Instance.new("Folder", MainFrame)
+Page3.Name = "Page3"
+
+local SlotsTable = {}
+
+local SlotsList = MorphList:Clone()
+SlotsList.Parent = Page3
+
+for i,b in pairs(SlotsList:GetChildren()) do
+	if b:IsA("TextButton") then
+		b:Destroy()
+	end
+end
+
+local CreateSlotButton = RefreshButton:Clone()
+CreateSlotButton.Parent = Page3
+CreateSlotButton.Text = "Create Slot"
+
+local SlotNameFrame = MainFrame:Clone()
+SlotNameFrame.Parent = Gui
+for i,b in pairs(SlotNameFrame:GetChildren()) do
+	if b:IsA("TextButton") or b:IsA("Folder") then
+		b:Destroy()
+	end
+end
+SlotNameFrame.Size = UDim2.new(0.259,0,0.173,0)
+SlotNameFrame.Position = UDim2.new(0.369,0,0.414,0)
+SlotNameFrame.Visible = false
+
+local SlotNameBox = SearchMorphBox:Clone()
+SlotNameBox.Parent = SlotNameFrame
+SlotNameBox.Position = UDim2.new(0.041,0,0.235,0)
+SlotNameBox.Size = UDim2.new(0.913,0,0.512,0)
+SlotNameBox.PlaceholderText = "Slot Name?"
+
+local SetSlotNameButton = RefreshButton:Clone()
+SetSlotNameButton.Parent = SlotNameFrame
+SetSlotNameButton.Position = UDim2.new(0.142,0,1.105,0)
+SetSlotNameButton.Size = UDim2.new(0.71,0,0.366,0)
+SetSlotNameButton.Text = "Create"
+
+CreateSlotButton.MouseButton1Down:Connect(function()
+	SlotNameFrame.Visible = true
+end)
+
+local SitEnabledButton = SetSlotNameButton:Clone()
+SitEnabledButton.Parent = SlotNameFrame
+SitEnabledButton.Position = UDim2.new(1.046,0,0.112,0)
+SitEnabledButton.Size = UDim2.new(0.425,0,0.278,0)
+SitEnabledButton.Text = "Sit Enabled: false"
+local SitEnabled = false
+
+local SaveAnimationsButton = SetSlotNameButton:Clone()
+SaveAnimationsButton.Parent = SlotNameFrame
+SaveAnimationsButton.Position = UDim2.new(1.046,0,-0.285,0)
+SaveAnimationsButton.Size = UDim2.new(0.425,0,0.278,0)
+SaveAnimationsButton.Text = "Save Current Animations: true"
+local SaveAnimations = true
+
+SitEnabledButton.MouseButton1Down:Connect(function()
+	SitEnabled = not SitEnabled
+	SitEnabledButton.Text = "Sit Enabled: "..tostring(SitEnabled)
+end)
+
+SaveAnimationsButton.MouseButton1Down:Connect(function()
+	if MorphIsRig then return end
+	SaveAnimations = not SaveAnimations
+	SaveAnimationsButton.Text = "Save Current Animations: "..tostring(SaveAnimations)
+end)
+
+SetSlotNameButton.MouseButton1Down:Connect(function()
+	if #SlotNameBox.Text > 0 and not SlotsTable[SlotNameBox.Text] then
+		local Animations = nil
+
+		if SaveAnimations and not MorphIsRig then
+			Animations = {
+				["walk"] = nil,
+				["idle"] = nil,
+				["jump"] = nil,
+			}
+
+			Animations["walk"] = plr.Character:FindFirstChild("Animate").walk.WalkAnim.AnimationId
+			Animations["idle"] = plr.Character:FindFirstChild("Animate").idle.Animation1.AnimationId
+			Animations["jump"] = plr.Character:FindFirstChild("Animate").jump.JumpAnim.AnimationId
+		end
+
+		SlotsTable[SlotNameBox.Text] = {
+			["RPName"] = plr.Character.Head.OverheadName.TextLabel.Text,
+			["RPBio"] = plr.Character.Head.OverheadBio.TextLabel.Text,
+			["Morph"] = CurrentMorph,
+			["IsRig"] = MorphIsRig,
+			["Sit Enabled"] = SitEnabled,
+			["Animations"] = Animations
+		}
+		SlotNameFrame.Visible = false
+		SitEnabled = false
+		SitEnabledButton.Text = "Sit Enabled: false"
+		local SlotButton = RefreshButton:Clone()
+		SlotButton.Parent = SlotsList
+		SlotButton.Size = UDim2.new(1,0,0.002,0)
+		SlotButton.Text = SlotNameBox.Text
+		SlotButton.Visible = true
+
+		SlotNameBox.Text = ""
+
+		SlotButton.MouseButton1Down:Connect(function()
+			workspace.EventsRPGUI.ChangeNameEvent:FireServer(SlotsTable[SlotButton.Text]["RPName"])
+			workspace.EventsRPGUI.ChangeBioEvent:FireServer(SlotsTable[SlotButton.Text]["RPBio"])
+			if SlotsTable[SlotButton.Text]["Morph"] then
+				if SlotsTable[SlotButton.Text]["IsRig"] == true then 
+					Refresh()
+					MorphIsRig = true
+				else
+					MorphIsRig = false
+				end
+				firetouchinterest(SlotsTable[SlotButton.Text]["Morph"],plr.Character.HumanoidRootPart)
+			end
+			if SlotsTable[SlotButton.Text]["Sit Enabled"] == true then
+				AdminEvent:FireServer("sit")
+			end
+			if SlotsTable[SlotButton.Text]["Animations"] and SlotsTable[SlotButton.Name]["IsRig"] == false then
+				plr.Character:FindFirstChild("Animate").walk.WalkAnim.AnimationId = SlotsTable[SlotButton.Text]["Animations"]["walk"]
+				plr.Character:FindFirstChild("Animate").idle.Animation1.AnimationId = SlotsTable[SlotButton.Text]["Animations"]["idle"]
+				plr.Character:FindFirstChild("Animate").idle.Animation2.AnimationId = SlotsTable[SlotButton.Text]["Animations"]["idle"]
+				plr.Character:FindFirstChild("Animate").jump.JumpAnim.AnimationId = SlotsTable[SlotButton.Text]["Animations"]["jump"]
+			end
+		end)
+		SlotButton.MouseButton2Down:Connect(function()
+			SlotsTable[SlotButton.Text] = nil
+			SlotButton:Destroy()
+		end)
+	end
+end)
+
+local Page4 = Instance.new("Folder", MainFrame)
+Page4.Name = "Page4"
+
+local EVODustButton = InvisibleBioAndName:Clone()
+EVODustButton.Parent = Page4
+EVODustButton.Text = "Evo!Dusttale Sans Animations"
+local EvoAnimations = {
+	["walk"] = "rbxassetid://111884280041368",
+	["idle"] = "rbxassetid://118524399373131",
+}
+
+local MummiaButton = MissButton:Clone()
+MummiaButton.Parent = Page4
+MummiaButton.Text = "Mummia Frisk Animations"
+local MummiaAnimations = {
+	["walk"] = "rbxassetid://5808772056",
+	["idle"] = "rbxassetid://5808678619",
+	["jump"] = "rbxassetid://5808688926",
+	["fall"] = "rbxassetid://5808691896",
+}
+
+local HallowButton = RainbowFire:Clone()
+HallowButton.Parent = Page4
+HallowButton.Text = "Hallowtale Sans Animations"
+local HallowAnimations = {
+	["walk"] = "rbxassetid://5842794954",
+	["idle"] = "rbxassetid://5842998311",
+}
+
+EVODustButton.MouseButton1Down:Connect(function()
+	plr.Character:FindFirstChild("Animate").walk.WalkAnim.AnimationId = EvoAnimations["walk"]
+	plr.Character:FindFirstChild("Animate").idle.Animation1.AnimationId = EvoAnimations["idle"]
+	plr.Character:FindFirstChild("Animate").idle.Animation2.AnimationId = EvoAnimations["idle"]
+end)
+
+MummiaButton.MouseButton1Down:Connect(function()
+	plr.Character:FindFirstChild("Animate").walk.WalkAnim.AnimationId = MummiaAnimations["walk"]
+	plr.Character:FindFirstChild("Animate").idle.Animation1.AnimationId = MummiaAnimations["idle"]
+	plr.Character:FindFirstChild("Animate").idle.Animation2.AnimationId = MummiaAnimations["idle"]
+	plr.Character:FindFirstChild("Animate").jump.JumpAnim.AnimationId = MummiaAnimations["jump"]
+	plr.Character:FindFirstChild("Animate").fall.FallAnim.AnimationId = MummiaAnimations["fall"]
+end)
+
+HallowButton.MouseButton1Down:Connect(function()
+	plr.Character:FindFirstChild("Animate").walk.WalkAnim.AnimationId = HallowAnimations["walk"]
+	plr.Character:FindFirstChild("Animate").idle.Animation1.AnimationId = HallowAnimations["idle"]
+	plr.Character:FindFirstChild("Animate").idle.Animation1.AnimationId = HallowAnimations["idle"]
+end)
+
+game:GetService("UserInputService").InputBegan:Connect(function(input,g)
+	if g then return end
+
+	if input.KeyCode == Enum.KeyCode.C then
+		Gui.Enabled = not Gui.Enabled
+	elseif input.KeyCode == Enum.KeyCode.Z then
+		Gui:Destroy()
+		script:Destroy()
+		return
+	end
+end)
+
+for i,p in pairs(MainFrame:GetChildren()) do
+	if p.Name ~= "Page"..CurrentPage and p:IsA("Folder") then
+		for i,b in pairs(p:GetChildren()) do
+			b.Visible = false
+		end
+	end
+end
+
+BackButton.MouseButton1Down:Connect(function()
+	CurrentPage -= 1
+	if CurrentPage < 1 then CurrentPage = 1 end
+	for i,p in pairs(MainFrame:GetChildren()) do
+		if p.Name ~= "Page"..CurrentPage and p:IsA("Folder") then
+			for i,b in pairs(p:GetChildren()) do
+				b.Visible = false
+			end
+		end
+	end
+	for i,p in pairs(MainFrame:GetChildren()) do
+		if p.Name == "Page"..CurrentPage and p:IsA("Folder") then
+			for i,b in pairs(p:GetChildren()) do
+				b.Visible = true
+			end
+		end
+	end
+end)
+
+NextButton.MouseButton1Down:Connect(function()
+	CurrentPage += 1
+	if CurrentPage > 4 then CurrentPage = 4 end
+	for i,p in pairs(MainFrame:GetChildren()) do
+		if p.Name ~= "Page"..CurrentPage and p:IsA("Folder") then
+			for i,b in pairs(p:GetChildren()) do
+				b.Visible = false
+			end
+		end
+	end
+	for i,p in pairs(MainFrame:GetChildren()) do
+		if p.Name == "Page"..CurrentPage and p:IsA("Folder") then
+			for i,b in pairs(p:GetChildren()) do
+				b.Visible = true
+			end
+		end
+	end
+end)
+
+function FindHRP()
+	local HumanoidRootPart = nil
+
+	for i,b in pairs(plr.Character:GetDescendants()) do
+		if b:IsA("BasePart") and b:FindFirstChild("RootJoint") then
+			HumanoidRootPart = b
+		end
+	end
+
+	return HumanoidRootPart
+end
