@@ -5,6 +5,7 @@ local plr = game:GetService("Players").LocalPlayer
 function firetouchinterest(Entity, Toucher)
     local Old_Pos = Entity.CFrame
     Entity.CFrame = Toucher.CFrame
+    Entity.CanCollide = false
     task.wait(0.25)
     Entity.CFrame = Old_Pos
 end
