@@ -3,13 +3,10 @@ local AdminEvent = game:GetService("ReplicatedStorage"):WaitForChild("$ArCommuni
 local plr = game:GetService("Players").LocalPlayer
 
 function firetouchinterest(Entity, Toucher)
-	local Old_Pos = Toucher.CFrame
-
-    Toucher.CFrame = Entity.CFrame * CFrame.new(0,2,0)
-
-    task.wait(0.05)
-
-    Toucher.CFrame = Old_Pos
+    local Old_Pos = Entity.CFrame
+    Entity.CFrame = Toucher.CFrame
+    task.wait(0.25)
+    Entity.CFrame = Old_Pos
 end
 
 local Gui = Instance.new("ScreenGui", plr.PlayerGui)
