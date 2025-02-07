@@ -6,8 +6,12 @@ function firetouchinterest(Entity, Toucher)
     local Old_Pos = Entity.CFrame
     Entity.CFrame = Toucher.CFrame
     Entity.CanCollide = false
-    task.wait(0.25)
-    Entity.CFrame = Old_Pos
+    func = Entity.Touched:Connect(function(hit)
+    if hit and hit == Toucher then
+        Entity.CFrame = Old_Pos
+        func:Disconnect()
+    end
+    end)
 end
 
 local Gui = Instance.new("ScreenGui", plr.PlayerGui)
@@ -170,23 +174,17 @@ leleleCensore.Parent = Page2
 leleleCensore.Text = "(le le le le le le le le) Anti-Censore"
 leleleCensore.Position = UDim2.new(0.145,0,0.612,0)
 
-local LoopRandomMorphs = InvisibleBioAndName:Clone()
-LoopRandomMorphs.Parent = Page2
-LoopRandomMorphs.Text = "Loop Random Morphs"
-LoopRandomMorphs.Position = UDim2.new(0.145,0,0.795,0)
-local LoopRandomMorphsEnabled = false
-
 InvisibleBioAndName.MouseButton1Down:Connect(function()
 	workspace.EventsRPGUI.ChangeNameEvent:FireServer("|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ")
 	workspace.EventsRPGUI.ChangeBioEvent:FireServer("|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ")
 end)
 
 MissButton.MouseButton1Down:Connect(function()
-	AdminEvent:FireServer("hat 14661068748")
+	--AdminEvent:FireServer("hat 14661068748")
 	game:GetService("TweenService"):Create(plr.Character.HumanoidRootPart,TweenInfo.new(0.25),{CFrame = plr.Character.HumanoidRootPart.CFrame * CFrame.new(12,0,0)}):Play()
 	task.wait(1.35)
 	game:GetService("TweenService"):Create(plr.Character.HumanoidRootPart,TweenInfo.new(0.35),{CFrame = plr.Character.HumanoidRootPart.CFrame * CFrame.new(-12,0,0)}):Play()
-	AdminEvent:FireServer("rhats")
+	--AdminEvent:FireServer("rhats")
 end)
 
 RainbowFire.MouseButton1Down:Connect(function()
@@ -194,35 +192,10 @@ RainbowFire.MouseButton1Down:Connect(function()
 	if not RainbowFireEnabled then AdminEvent:FireServer("unfire") end
 end)
 
-LoopRandomMorphs.MouseButton1Down:Connect(function()
-	LoopRandomMorphsEnabled = not LoopRandomMorphsEnabled
-end)
-
 spawn(function()
 	while task.wait(0.1) do
 		if RainbowFireEnabled then
 			AdminEvent:FireServer("fire me 25 "..math.random(25,255).." "..math.random(25,255).." "..math.random(25,255))
-		end
-	end
-end)
-
-spawn(function()
-	while task.wait() do
-		if LoopRandomMorphsEnabled then
-			local MrphPad = math.random(1,#MorphList:GetChildren())
-			local ThisisMorphRig = false
-			if MrphPad.Parent and MrphPad.Parent:FindFirstChild("Morph") and MrphPad.Parent:FindFirstChild("Morph"):FindFirstChild("Tors") then
-				ThisisMorphRig = true
-			end
-			if MorphIsRig or ThisisMorphRig then Refresh() end
-			firetouchinterest(MrphPad,FindHRP())
-			CurrentMorph = MrphPad
-			task.wait(0.3)
-			if plr.Character:FindFirstChild("Tors") then 
-				MorphIsRig = true 
-			else 
-				MorphIsRig = false 
-			end
 		end
 	end
 end)
@@ -329,7 +302,7 @@ SetSlotNameButton.MouseButton1Down:Connect(function()
 				["walk"] = nil,
 				["idle"] = nil,
 				["jump"] = nil,
-			}
+            }
 
 			Animations["walk"] = plr.Character:FindFirstChild("Animate").walk.WalkAnim.AnimationId
 			Animations["idle"] = plr.Character:FindFirstChild("Animate").idle.Animation1.AnimationId
