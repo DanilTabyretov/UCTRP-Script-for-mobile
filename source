@@ -3,15 +3,15 @@ local AdminEvent = game:GetService("ReplicatedStorage"):WaitForChild("$ArCommuni
 local plr = game:GetService("Players").LocalPlayer
 
 function firetouchinterest(Entity, Toucher)
-    local Old_Pos = Entity.CFrame
-    Entity.CFrame = Toucher.CFrame
-    Entity.CanCollide = false
-    func = Entity.Touched:Connect(function(hit)
-    if hit and hit == Toucher then
-        Entity.CFrame = Old_Pos
-        func:Disconnect()
-    end
-    end)
+	local Old_Pos = Entity.CFrame
+	Entity.CFrame = Toucher.CFrame
+	Entity.CanCollide = false
+	func = Entity.Touched:Connect(function(hit)
+		if hit and hit == Toucher then
+			Entity.CFrame = Old_Pos
+			func:Disconnect()
+		end
+	end)
 end
 
 local Gui = Instance.new("ScreenGui", plr.PlayerGui)
@@ -70,7 +70,7 @@ local MorphIsRig = false
 local SearchMorphBox = Instance.new("TextBox", Page1)
 SearchMorphBox.BackgroundColor3 = Color3.fromRGB(86,86,86)
 SearchMorphBox.Position = UDim2.new(0.041,0,-0.092,0)
-SearchMorphBox.Size = UDim2.new(0.913,0,0.066,0)
+SearchMorphBox.Size = UDim2.new(0.64,0,0.066,0)
 SearchMorphBox.PlaceholderColor3 = Color3.fromRGB(170,170,170)
 SearchMorphBox.PlaceholderText = "Morph Name?"
 SearchMorphBox.TextColor3 = Color3.new(1,1,1)
@@ -82,7 +82,7 @@ UIStrokeMainFrame:Clone().Parent = SearchMorphBox
 
 local RefreshButton = Instance.new("TextButton", Page1)
 RefreshButton.Position = UDim2.new(0.145,0,0.787,0)
-RefreshButton.Size = UDim2.new(0.71,0,0.141,0)
+RefreshButton.Size = UDim2.new(0.71,0,0.084,0)
 RefreshButton.BackgroundColor3 = Color3.fromRGB(47,47,47)
 RefreshButton.TextColor3 = Color3.new(1,1,1)
 RefreshButton.TextStrokeTransparency = 0
@@ -95,6 +95,16 @@ local UIStrokeRefreshButton = Instance.new("UIStroke", RefreshButton)
 UIStrokeRefreshButton.Color = Color3.fromRGB(158,158,158)
 UIStrokeRefreshButton.Thickness = 2
 UIStrokeRefreshButton.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+local Random_morph = RefreshButton:Clone()
+Random_morph.Position = UDim2.new(0.739,0,-0.102,0)
+Random_morph.Size = UDim2.new(0.258,0,0.084,0)
+Random_morph.Text = "Random morph"
+
+local Update_morph_list = RefreshButton:Clone()
+Update_morph_list.Parent = RefreshButton.Parent
+Update_morph_list.Position = UDim2.new(0.145,0,0.886,0)
+Update_morph_list.Text = "Update morph list"
 
 function Refresh()
 	local Pos = plr.Character.HumanoidRootPart.CFrame
@@ -110,33 +120,54 @@ RefreshButton.MouseButton1Down:Connect(Refresh)
 
 local MorphsTable = {}
 
-for i,char in pairs(workspace:GetDescendants()) do
-	if char:IsA("Model") then
-		local MrphPad = char:FindFirstChild("MrphPad") or char:FindFirstChild("Button") or char:FindFirstChild("HalloweenPad")
-		if MrphPad then
-			local MrphButton = RefreshButton:Clone()
-			MrphButton.Parent = MorphList
-			MrphButton.Size = UDim2.new(1,0,0.0015,0)
-			MrphButton.Text = char.Name
-			MrphButton.MouseButton1Down:Connect(function()
-				local ThisisMorphRig = false
-				if MrphPad.Parent and MrphPad.Parent:FindFirstChild("Morph") and MrphPad.Parent:FindFirstChild("Morph"):FindFirstChild("Tors") then
-					ThisisMorphRig = true
-				end
-				if MorphIsRig or ThisisMorphRig then Refresh() end
-				firetouchinterest(MrphPad,FindHRP())
-				CurrentMorph = MrphPad
-				task.wait(0.3)
-				if plr.Character:FindFirstChild("Tors") then 
-					MorphIsRig = true 
-				else 
-					MorphIsRig = false 
-				end
-			end)
-			table.insert(MorphsTable,MrphPad)
+function Load_Morphs()
+	for i,char in pairs(workspace:GetDescendants()) do
+		if char:IsA("Model") then
+			local MrphPad = char:FindFirstChild("MrphPad") or char:FindFirstChild("Button") or char:FindFirstChild("HalloweenPad")
+			if MrphPad then
+				local MrphButton = RefreshButton:Clone()
+				MrphButton.Parent = MorphList
+				MrphButton.Size = UDim2.new(1,0,0.0015,0)
+				MrphButton.Text = char.Name
+				MrphButton.MouseButton1Down:Connect(function()
+					local ThisisMorphRig = false
+					if MrphPad.Parent and MrphPad.Parent:FindFirstChild("Morph") and MrphPad.Parent:FindFirstChild("Morph"):FindFirstChild("Tors") then
+						ThisisMorphRig = true
+					end
+					if MorphIsRig or ThisisMorphRig then Refresh() end
+					firetouchinterest(MrphPad,FindHRP())
+					CurrentMorph = MrphPad
+					task.wait(0.3)
+					if plr.Character:FindFirstChild("Tors") then 
+						MorphIsRig = true 
+					else 
+						MorphIsRig = false 
+					end
+				end)
+				table.insert(MorphsTable,MrphPad)
+			end
 		end
 	end
 end
+
+Load_Morphs()
+
+local CD_for_update = false
+Update_morph_list.MouseButton1Down:Connect(function()
+	if CD_for_update then return end
+	CD_for_update = true
+	
+	for i,b in pairs(MorphList:GetChildren()) do
+		if b:IsA("TextButton") then
+			b:Destroy()
+		end
+	end
+	table.clear(MorphsTable)
+	
+	Load_Morphs()
+	
+	CD_for_update = false
+end)
 
 SearchMorphBox:GetPropertyChangedSignal("Text"):Connect(function()
 	for i,button in pairs(MorphList:GetChildren()) do
@@ -148,6 +179,11 @@ SearchMorphBox:GetPropertyChangedSignal("Text"):Connect(function()
 			end
 		end
 	end
+end)
+
+Random_morph.MouseButton1Down:Connect(function()
+	local mrph = MorphsTable[math.random(1,#MorphsTable)]
+	firetouchinterest(mrph,FindHRP())
 end)
 
 local Page2 = Instance.new("Folder", MainFrame)
@@ -260,12 +296,22 @@ SlotNameBox.PlaceholderText = "Slot Name?"
 
 local SetSlotNameButton = RefreshButton:Clone()
 SetSlotNameButton.Parent = SlotNameFrame
-SetSlotNameButton.Position = UDim2.new(0.142,0,1.105,0)
-SetSlotNameButton.Size = UDim2.new(0.71,0,0.366,0)
+SetSlotNameButton.Position = UDim2.new(0.041,0,1.105,0)
+SetSlotNameButton.Size = UDim2.new(0.486,0,0.366,0)
 SetSlotNameButton.Text = "Create"
+
+local Cancel_slot_Creating = SetSlotNameButton:Clone()
+Cancel_slot_Creating.Parent = SlotNameFrame
+Cancel_slot_Creating.Position = UDim2.new(0.573,0,1.105,0)
+Cancel_slot_Creating.Size = UDim2.new(0.424,0,0.366,0)
+Cancel_slot_Creating.Text = "Cancel"
 
 CreateSlotButton.MouseButton1Down:Connect(function()
 	SlotNameFrame.Visible = true
+end)
+
+Cancel_slot_Creating.MouseButton1Down:Connect(function()
+	SlotNameFrame.Visible = false
 end)
 
 local SitEnabledButton = SetSlotNameButton:Clone()
@@ -302,7 +348,7 @@ SetSlotNameButton.MouseButton1Down:Connect(function()
 				["walk"] = nil,
 				["idle"] = nil,
 				["jump"] = nil,
-            }
+			}
 
 			Animations["walk"] = plr.Character:FindFirstChild("Animate").walk.WalkAnim.AnimationId
 			Animations["idle"] = plr.Character:FindFirstChild("Animate").idle.Animation1.AnimationId
